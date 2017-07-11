@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf8>
+    <title>拖拽并发送请求</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+
+        }
+
+        #box {
+            background: #ccc;
+        }
+
+        #head {
+
+            height: 100px;
+            line-height: 100px;
+            overflow: hidden;
+            font-size: 0
+        }
+
+        #head input[type=button] {
+            margin-right: 50px;
+        }
+
+        #data {
+            background-color: pink;
+            border: 1px solid #000;
+            position: absolute;
+        }
+
+        #list, #list1, #list2 {
+            width: 300px;
+            height: 400px;
+            border: 1px solid #000;
+            overflow: auto;
+            float: left;
+            display: none;
+        }
+
+        #close {
+            /*position: absolute;*/
+            /*right: 0;*/
+
+        }
+
+        #data li:hover {
+            color: red;
+        }
+
+    </style>
+</head>
+<body>
+<div id="box">
+    <div id="head">
+        <input type="text" placeholder="请选择省份" id="txt">
+
+        <input type="text" placeholder="请选择城市" id="txt1">
+
+        <input type="text" placeholder="请选择区县" id="txt2">
+        <input type="button" id="close" value="提交" disabled=disabled>
+    </div>
+
+
+    <div id="data">
+
+        <ul id="list">
+
+        </ul>
+
+        <ul id="list1">
+
+        </ul>
+
+        <ul id="list2">
+
+        </ul>
+
+    </div>
+</div>
+<script>
+
+    function callback(res) {
+        var res = res;
+        var txt = document.getElementById('txt');
+        var txt1 = document.getElementById('txt1');
+        var txt2 = document.getElementById('txt2');
+
+        var list = document.getElementById('list');
+
+        var list1 = document.getElementById('list1');
+
+        var list2 = document.getElementById('list2');
+
+        //遍历省份
+        for (var i = 0; i <= 30; i++) {
+
+            var li = document.createElement('li');
+            li.setAttribute('index', res[i].item_code)
+            li.innerHTML = res[i].item_name;
+            list.appendChild(li)
+        }
+
+        //服务器返回的数据
+        //点击列表
+        list.onclick = function (e) {
+            list1.style.display = 'block';
+            //兼容性处理
+            var e = e || window.event;
+            var target = e.target || e.srcElement;
+            //事件代理
+            if (target.nodeName.toLowerCase() == 'li') {
+                list1.innerHTML='';
+                list2.innerHTML = '';
+                txt1.value='';
+                txt2.value = '';
+                console.log(target.innerHTML)
+                console.log(target.getAttribute('index'))
+                var code = target.getAttribute('index').substr(0,2)
+                for (var j = 30; j < res.length; j++) {
+
+                    if(res[j].item_code.substr(0,2)==code&&res[j].item_name.substr(-1, 1)!='县'&&res[j].item_name.substr(-1, 1)!='区'){
+
+                        var li = document.createElement('li');
+                        li.setAttribute('index', res[j].item_code)
+                        li.innerHTML = res[j].item_name;
+                        list1.appendChild(li)
+                    }
+                }
+            }
+            txt.value = target.innerHTML;
+
+        }
+
+        list1.onclick = function (e) {
+            //兼容性处理
+            var e = e || window.event;
+            var target = e.target || e.srcElement;
+            list2.style.display = 'block';
+            //只有当点击二级选项时才会显示确定按钮
+            document.getElementById('close').removeAttribute('disabled')
+
+
+
+            //事件代理
+            if (target.nodeName.toLowerCase() == 'li') {
+                list2.innerHTML='';
+                txt2.value = '';
+                console.log(target.innerHTML)
+                console.log(target.getAttribute('index'))
+                var code = target.getAttribute('index').substr(0,2)
+                for (var j = 30; j < res.length; j++) {
+
+                    if(res[j].item_code.substr(0,2)==code&&res[j].item_name.substr(-1, 1)!='市'){
+
+                        var li = document.createElement('li');
+                        li.setAttribute('index', res[j].item_code)
+                        li.innerHTML = res[j].item_name;
+                        list2.appendChild(li)
+                    }
+                }
+            }
+            txt1.value = target.innerHTML;
+
+        }
+
+
+
+        list2.onclick = function (e) {
+            //兼容性处理
+            var e = e || window.event;
+            var target = e.target || e.srcElement;
+            //事件代理
+            if (target.nodeName.toLowerCase() == 'li') {
+                var code = target.getAttribute('index').substr(0,2)
+                for (var j = 30; j < res.length; j++) {
+
+                    if(res[j].item_code.substr(0,2)==code&&res[j].item_name.substr(-1, 1)!='市'){
+//                        console.log(res[j].item_name.substr(-1, 1),'倒数  ');
+//                        console.log(res[j].item_name+res[j].item_code);
+                        var li = document.createElement('li');
+                        li.setAttribute('index', res[j].item_code)
+                        li.innerHTML = res[j].item_name;
+                        list2.appendChild(li)
+                    }
+                }
+            }
+            txt2.value = target.innerHTML;
+
+        }
+
+    }
+
+
+    window.onload = function () {
+        var list = document.getElementById('list');
+        var btn = document.getElementById('txt');
+        var close = document.getElementById('close');
+        var data = document.getElementById('data');
+        var txt = document.getElementById('txt');
+        var txt1 = document.getElementById('txt1');
+        var txt2 = document.getElementById('txt2');
+
+
+        btn.onclick = function () {
+
+            if (data.style.display == 'block')return;
+            list.style.display = 'block';
+            var script = document.createElement('script');
+            script.setAttribute('src', 'http://127.0.0.1:8888');
+            document.head.appendChild(script)
+            //Ajax('http://127.0.0.1:8888/',function(res){
+            //console.log(res)
+            //})
+        };
+        close.onclick = function () {
+            data.style.display = 'none';
+            data.style.left = 0;
+            data.style.top = 100 + 'px';
+
+
+            var params = {
+                '省份':txt.value,
+                '城市':txt1.value,
+                '区县':txt2.value,
+            };
+            //发送数据
+            Ajax('post','http://127.0.0.1:8888',params,function () {
+                alert('已提交服务器')
+            })
+
+
+        }
+
+        //拖拽
+        data.onmousedown = function (e) {
+            var e = e || window.event;
+            var disX = e.clientX - data.offsetLeft;
+            var disY = e.clientY - data.offsetTop;
+            document.onmousemove = function (e) {
+                var e = e || window.event;
+                var x = e.clientX - disX + 'px';
+                var y = e.clientY - disY + 'px';
+                data.style.left = x;
+                data.style.top = y
+            };
+            document.onmouseup = function () {
+                document.onmousemove = null;
+                document.onmouseup = null;
+            }
+        }
+
+        //ajax
+        function Ajax(type, url,data, fn) {
+            var xhr = new XMLHttpRequest();
+
+            if(type.toLowerCase()=='get'){
+                xhr.open(type, url);
+                xhr.send();
+
+            }else if(type.toLowerCase()=='post'){
+                xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+                //xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded")
+                xhr.send(data)
+            }
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    fn(xhr.responseText)
+                    console.log(xhr.status)
+                } else {
+                    fn('错误代码' + xhr.status)
+                }
+            }
+
+
+        }
+    }
+</script>
+</body>
+</html>
