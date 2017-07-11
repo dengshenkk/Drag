@@ -228,11 +228,19 @@
                 '城市':txt1.value,
                 '区县':txt2.value,
             };
-            //发送数据
+
+				alert('提交成功!再见!');
+
+
+				window.close()
+            //发送数据 node 服务器没配置 所以这里用不了
             Ajax('post','http://127.0.0.1:8888',params,function () {
                 alert('已提交服务器')
+				alert('提交成功!');
+				window.close()
             })
-
+			
+		
 
         }
 
